@@ -1,0 +1,127 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum CompetitionStatus {
+  DRAFT
+  OPEN
+  CLOSED
+  ARCHIVED
+}
+
+enum NominationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  CANCELLED
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  EDITOR
+}
+
+model Competition {
+  id          String             @id @default(cuid())
+  name        String
+  slug        String             @unique
+  description String?
+  status      CompetitionStatus @default(DRAFT)
+  startsAt    DateTime?
+  endsAt      DateTime?
+  categories  Category[]
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+}
+
+model Category {
+  id            String      @id @default(cuid())
+  competitionId String
+  competition   Competition @relation(fields: [competitionId], references: [id])
+  name          String
+  slug          String
+  description   String?
+  nominees      Nominee[]
+  createdAt     DateTime    @default(now())
+
+  @@unique([competitionId, slug])
+}
+
+model Nominee {
+  id        String          @id @default(cuid())
+  categoryId String
+  category  Category        @relation(fields: [categoryId], references: [id])
+  fullName  String
+  slug      String
+  biography String?
+  photoUrl  String?
+  status    NominationStatus @default(PENDING)
+  votes     Int             @default(0)
+  payments  Payment[]
+  ledger    VoteLedger[]
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@unique([categoryId, slug])
+  @@index([categoryId, status, votes])
+}
+
+model NominationSubmission {
+  id             String           @id @default(cuid())
+  categoryId     String
+  nomineeName    String
+  biography      String?
+  photoUrl       String?
+  submitterName  String
+  submitterEmail String?
+  submitterPhone String?
+  consent        Boolean          @default(false)
+  status         NominationStatus @default(PENDING)
+  createdAt      DateTime         @default(now())
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  nomineeId         String
+  nominee           Nominee       @relation(fields: [nomineeId], references: [id])
+  phoneNumber       String
+  amount            Int
+  voteQuantity      Int
+  status            PaymentStatus @default(PENDING)
+  checkoutRequestId String?       @unique
+  merchantRequestId String?
+  providerReceipt   String?       @unique
+  accountReference  String        @unique
+  rawCallback       Json?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+}
+
+model VoteLedger {
+  id        String   @id @default(cuid())
+  nomineeId String
+  nominee   Nominee  @relation(fields: [nomineeId], references: [id])
+  paymentId String   @unique
+  votes     Int
+  createdAt DateTime @default(now())
+}
+
+model Admin {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  role         AdminRole @default(EDITOR)
+  createdAt    DateTime  @default(now())
+}

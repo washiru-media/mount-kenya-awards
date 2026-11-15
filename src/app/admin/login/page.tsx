@@ -1,0 +1,7 @@
+'use client';
+import { useState } from 'react';
+export default function AdminLogin() {
+ const [email,setEmail]=useState(''); const [password,setPassword]=useState(''); const [error,setError]=useState('');
+ async function submit(e:React.FormEvent){e.preventDefault();setError('');const r=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})});if(r.ok)location.href='/admin';else setError((await r.json()).error||'Login failed');}
+ return <main className="grid min-h-screen place-items-center px-5"><form onSubmit={submit} className="w-full max-w-md rounded-3xl border border-amber-300/30 bg-stone-950 p-8"><p className="text-xs tracking-[.3em] text-amber-200">MOUNT KENYA AWARDS</p><h1 className="mt-4 text-3xl font-black gold-text">Administrator login</h1><label className="mt-8 block text-sm">Email<input required type="email" value={email} onChange={e=>setEmail(e.target.value)} className="mt-2 w-full rounded-xl border border-white/15 bg-neutral-900 p-3"/></label><label className="mt-4 block text-sm">Password<input required type="password" value={password} onChange={e=>setPassword(e.target.value)} className="mt-2 w-full rounded-xl border border-white/15 bg-neutral-900 p-3"/></label>{error&&<p className="mt-4 text-sm text-red-300">{error}</p>}<button className="mt-6 w-full rounded-full bg-amber-300 p-3 font-bold text-black">Sign in</button><p className="mt-4 text-xs text-stone-500">Access is restricted to the designated super administrator.</p></form></main>;
+}
