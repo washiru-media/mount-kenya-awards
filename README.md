@@ -70,3 +70,4 @@ Vote buttons remain disabled until secure M-Pesa Business checkout and callback 
 - Build script now runs `prisma generate && next build`; postinstall generates Prisma Client.
 - Added `VERCEL_NEON_SETUP.md` with account setup, environment variables, migration, seed, preview and domain connection instructions.
 - No accounts have been connected and no deployment has been performed from this chat.
+Deployment trigger check
